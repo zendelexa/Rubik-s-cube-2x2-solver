@@ -21,31 +21,31 @@ public:
 	}
 };
 
-class Cube
-{
-	const int U = 0, F = 1, L = 2, B = 3, R = 4, D = 5;
+const int U = 0, F = 1, L = 2, B = 3, R = 4, D = 5;
 
-	string faces_names = "UFLBRD";
-
-	Move move_R = Move(3, 4, { { {R, 0, 0}, {R, 0, 1}, {R, 1, 1}, {R, 1, 0} },
+Move move_R = Move(3, 4, { { {R, 0, 0}, {R, 0, 1}, {R, 1, 1}, {R, 1, 0} },
 							   { {F, 0, 1}, {U, 0, 1}, {B, 1, 0}, {D, 0, 1} },
 							   { {F, 1, 1}, {U, 1, 1}, {B, 0, 0}, {D, 1, 1} } });
 
-	Move move_Y = Move(6, 4, { { {U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0} },
-							   { {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
-							   { {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} },
-							   { {F, 1, 0}, {L, 1, 0}, {B, 1, 0}, {R, 1, 0} },
-							   { {F, 1, 1}, {L, 1, 1}, {B, 1, 1}, {R, 1, 1} },
-							   { {D, 0, 0}, {D, 1, 0}, {D, 1, 1}, {D, 0, 1} } });
+Move move_Y = Move(6, 4, { { {U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0} },
+						   { {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
+						   { {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} },
+						   { {F, 1, 0}, {L, 1, 0}, {B, 1, 0}, {R, 1, 0} },
+						   { {F, 1, 1}, {L, 1, 1}, {B, 1, 1}, {R, 1, 1} },
+						   { {D, 0, 0}, {D, 1, 0}, {D, 1, 1}, {D, 0, 1} } });
 
-	Move move_U = Move(3, 4, { { {U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0} },
-							   { {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
-							   { {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} } });
+Move move_U = Move(3, 4, { { {U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0} },
+						   { {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
+						   { {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} } });
 
-	Move move_F = Move(3, 4, { { {F, 0, 0}, {F, 0, 1}, {F, 1, 1}, {F, 1, 0} },
-							   { {U, 1, 0}, {R, 0, 0}, {D, 0, 1}, {L, 1, 1} },
-							   { {U, 1, 1}, {R, 1, 0}, {D, 0, 0}, {L, 0, 1} } });
+Move move_F = Move(3, 4, { { {F, 0, 0}, {F, 0, 1}, {F, 1, 1}, {F, 1, 0} },
+						   { {U, 1, 0}, {R, 0, 0}, {D, 0, 1}, {L, 1, 1} },
+						   { {U, 1, 1}, {R, 1, 0}, {D, 0, 0}, {L, 0, 1} } });
 
+string faces_names = "UFLBRD";
+
+class Cube
+{
 public:
 	char tiles[6][2][2] = {}; //UFLBRD
 	Cube() {}
@@ -300,7 +300,10 @@ vector<string> solve(Cube* start_cube, Cube* end_cube)
 			{
 				cout << move << " ";
 			}
-			return ans;
+			
+			seen_end_tree.clear();
+
+			return ans;  // Function stops here!
 		}
 
 		current_node->makeChildren(current_side == 2);
@@ -338,7 +341,7 @@ int main()
 	cube.moveR();
 	cube.print();*/
 
-	cube.moveR();
+	/*cube.moveR();
 	cube.moveUp();
 	cube.moveFp();
 	cube.moveUp();
@@ -349,11 +352,27 @@ int main()
 	cube.moveR();
 	cube.moveU();
 	cube.moveRp();
+	cube.print();*/
+
+	//F' R F' U' F2 R2 U R F R'
+
+	cube.moveFp();
+	cube.moveR();
+	cube.moveFp();
+	cube.moveUp();
+	cube.moveF2();
+	cube.moveR2();
+	cube.moveU();
+	cube.moveR();
+	cube.moveF();
+	cube.moveRp();
 	cube.print();
 
 	Cube cube2 = Cube();
 	cube2.load("input.txt");
 	solve(&cube, &cube2);
+
+	cout << "HELLOWRLD";
 
 	/*cube.moveR();
 	cube.moveU();
