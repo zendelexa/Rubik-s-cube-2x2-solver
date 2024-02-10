@@ -2,69 +2,13 @@
 #include<fstream>
 #include<vector>
 #include<map>
-#include<set>
-#include<queue>
-#include<stack>
-#include"Move.h"
-#include"Cube.h"
-
-class CubeStateTreeNode
-{
-public:
-	Cube* cube = NULL;
-	CubeStateTreeNode* parent = NULL;
-	CubeStateTreeNode* children[3] = {};
-	std::string move = "";
-	CubeStateTreeNode(Cube* cube_, CubeStateTreeNode* parent_, std::string move_)
-	{
-		cube = cube_;
-		parent = parent_;
-		move = move_;
-	}
-
-	~CubeStateTreeNode()
-	{
-		delete cube;
-	}
-
-	void makeChildren(bool reverse_moves)
-	{
-		children[0] = new CubeStateTreeNode(cube->makeCopy(), this, "F");
-		if (!reverse_moves)
-			children[0]->cube->moveF();
-		else
-			children[0]->cube->moveFp();
-
-		children[1] = new CubeStateTreeNode(cube->makeCopy(), this, "U");
-		if (!reverse_moves)
-			children[1]->cube->moveU();
-		else
-			children[1]->cube->moveUp();
-
-		children[2] = new CubeStateTreeNode(cube->makeCopy(), this, "R");
-		if (!reverse_moves)
-			children[2]->cube->moveR();
-		else
-			children[2]->cube->moveRp();
-	}
-
-	void updateSeenChildren(std::map<std::string, CubeStateTreeNode*>& seen)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			std::string hash_string = children[i]->cube->stringify();
-			if (seen.find(hash_string) != seen.end())
-			{
-				delete children[i];
-				children[i] = NULL;
-			}
-			else
-			{
-				seen[hash_string] = children[i];
-			}
-		}
-	}
-};
+#include <set>
+#include <queue>
+#include <stack>
+#include "Move.h"
+#include "Cube.h"
+#include "CubeStateTreeNode.h"
+#include "CubeStateTree.h"
 
 std::string reverseMove(std::string move)
 {
@@ -75,99 +19,76 @@ std::string reverseMove(std::string move)
 	return move;
 }
 
-std::map<std::string, CubeStateTreeNode*> seen_start_tree, seen_end_tree;
-std::queue<CubeStateTreeNode*> bfs_order_start_tree, bfs_order_end_tree;
-std::vector<std::string> solve(Cube* start_cube, Cube* end_cube)
+enum class TreeSide { START_SIDE, END_SIDE };
+
+std::vector<std::string> formResult(CubeStateTree& start_tree, CubeStateTree& end_tree, CubeStateTreeNode& current_node, TreeSide current_side)
 {
-	CubeStateTreeNode* start_node = new CubeStateTreeNode(start_cube, NULL, "");
-	CubeStateTreeNode* end_node = new CubeStateTreeNode(end_cube, NULL, "");
+	CubeStateTreeNode* current_end_tree_cube;
+	CubeStateTreeNode* current_start_tree_cube;
+	if (current_side == TreeSide::START_SIDE)
+	{
+		current_end_tree_cube = end_tree.seen[current_node.cube.stringify()];
+		current_start_tree_cube = &current_node;
+	}
+	else
+	{
+		current_end_tree_cube = &current_node;
+		current_start_tree_cube = start_tree.seen[current_node.cube.stringify()];
+	}
 
-	seen_start_tree[start_node->cube->stringify()] = start_node;
-	seen_end_tree[end_node->cube->stringify()] = end_node;
+	std::stack<std::string> tmp;
+	std::vector<std::string> res;
+	while (current_start_tree_cube->parent != nullptr)
+	{
+		tmp.push(current_start_tree_cube->move);
+		current_start_tree_cube = current_start_tree_cube->parent;
+	}
+	while (!tmp.empty())
+	{
+		res.push_back(tmp.top());
+		tmp.pop();
+	}
+	while (current_end_tree_cube->parent != nullptr)
+	{
+		res.push_back(current_end_tree_cube->move);
+		current_end_tree_cube = current_end_tree_cube->parent;
+	}
 
-	bfs_order_start_tree.push(start_node);
-	bfs_order_end_tree.push(end_node);
+	return res;
+}
 
-	int current_side = 1;
+std::vector<std::string> solve(const Cube& start_cube, const Cube& end_cube)
+{
+	CubeStateTree start_tree(start_cube);
+	CubeStateTree end_tree(end_cube);
+
+	TreeSide current_side = TreeSide::START_SIDE;
 	while (true)
 	{
-		std::queue<CubeStateTreeNode*>* current_bfs_order = &bfs_order_start_tree;
-		std::queue<CubeStateTreeNode*>* opposite_bfs_order = &bfs_order_end_tree;
-		std::map<std::string, CubeStateTreeNode*>* current_seen = &seen_start_tree;
-		std::map<std::string, CubeStateTreeNode*>* opposite_seen = &seen_end_tree;
-		if (current_side == 2)
-		{
-			current_bfs_order = &bfs_order_end_tree;
-			opposite_bfs_order = &bfs_order_start_tree;
-			current_seen = &seen_end_tree;
-			opposite_seen = &seen_start_tree;
-		}
+		CubeStateTree* current_tree = &start_tree;
+		CubeStateTree* opposite_tree = &end_tree;
+		if (current_side == TreeSide::END_SIDE)
+			std::swap(current_tree, opposite_tree);
 
-		CubeStateTreeNode* current_node = current_bfs_order->front();
-		current_bfs_order->pop();
+		CubeStateTreeNode* current_node = current_tree->bfs_order.front();
+		current_tree->bfs_order.pop();
 
-		if (opposite_seen->find(current_node->cube->stringify()) != opposite_seen->end())
-		{
-			//current_node->cube->print();
-			//cout << "\n\n\n";
-			CubeStateTreeNode* current_end_tree_cube = nullptr;
-			CubeStateTreeNode* current_start_tree_cube = nullptr;
+		bool do_trees_connect = opposite_tree->seen.find(current_node->cube.stringify()) != opposite_tree->seen.end();
+		if (do_trees_connect)
+			return formResult(start_tree, end_tree, *current_node, current_side); // Function exits here!
 
-			if (current_side == 1)
-			{
-				current_end_tree_cube = seen_end_tree[current_node->cube->stringify()];
-				current_start_tree_cube = current_node;
+		current_tree->makeChildren(*current_node, current_side == TreeSide::END_SIDE);
+		for (CubeStateTreeNode& child : current_node->children)
+			if (child.is_usable) 
+				current_tree->bfs_order.push(&child);
 
-			}
-			else
-			{
-				current_end_tree_cube = current_node;
-				current_start_tree_cube = seen_start_tree[current_node->cube->stringify()];
-
-			}
-
-			std::stack<std::string> tmp;
-			std::vector<std::string> ans;
-			while (current_start_tree_cube->parent != nullptr)
-			{
-				tmp.push(current_start_tree_cube->move);
-				current_start_tree_cube = current_start_tree_cube->parent;
-			}
-			while (!tmp.empty())
-			{
-				ans.push_back(tmp.top());
-				tmp.pop();
-			}
-			while (current_end_tree_cube->parent != nullptr)
-			{
-				ans.push_back(current_end_tree_cube->move);
-				current_end_tree_cube = current_end_tree_cube->parent;
-			}
-
-			for (const std::string& move : ans)
-			{
-				std::cout << move << " ";
-			}
-
-			seen_end_tree.clear();
-
-			return ans;  // Function stops here!
-		}
-
-		current_node->makeChildren(current_side == 2);
-		current_node->updateSeenChildren(*current_seen);
-		for (CubeStateTreeNode* child : current_node->children)
-		{
-			if (child != NULL) current_bfs_order->push(child);
-		}
-
-		current_side = (current_side == 1) ? 2 : 1;
+		current_side = (current_side == TreeSide::START_SIDE) ? TreeSide::END_SIDE : TreeSide::START_SIDE;
 	}
 }
 
 int main()
 {
-	Cube cube = Cube();
+	Cube cube;
 	cube.load("input.txt");
 	//cube.moveF();
 
@@ -218,9 +139,8 @@ int main()
 
 	Cube cube2 = Cube();
 	cube2.load("input.txt");
-	solve(&cube, &cube2);
-
-	std::cout << "HELLOWRLD";
+	auto solution = solve(cube, cube2);
+	for (auto& move : solution) std::cout << move << " ";
 
 	/*cube.moveR();
 	cube.moveU();

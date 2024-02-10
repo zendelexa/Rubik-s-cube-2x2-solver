@@ -3,24 +3,26 @@
 
 enum Faces { U, F, L, B, R, D };
 
-const Move MOVE_R = Move(3, 4, { { {R, 0, 0}, {R, 0, 1}, {R, 1, 1}, {R, 1, 0} },
-							   { {F, 0, 1}, {U, 0, 1}, {B, 1, 0}, {D, 0, 1} },
-							   { {F, 1, 1}, {U, 1, 1}, {B, 0, 0}, {D, 1, 1} } });
+const Move MOVE_R = Move("R", 3, 4, {{{R, 0, 0}, {R, 0, 1}, {R, 1, 1}, {R, 1, 0}},
+									{ {F, 0, 1}, {U, 0, 1}, {B, 1, 0}, {D, 0, 1} },
+									{ {F, 1, 1}, {U, 1, 1}, {B, 0, 0}, {D, 1, 1} } });
 
-const Move MOVE_Y = Move(6, 4, { { {U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0} },
-						   { {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
-						   { {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} },
-						   { {F, 1, 0}, {L, 1, 0}, {B, 1, 0}, {R, 1, 0} },
-						   { {F, 1, 1}, {L, 1, 1}, {B, 1, 1}, {R, 1, 1} },
-						   { {D, 0, 0}, {D, 1, 0}, {D, 1, 1}, {D, 0, 1} } });
+const Move MOVE_Y = Move("y", 6, 4, {{{U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0}},
+									{ {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
+									{ {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} },
+									{ {F, 1, 0}, {L, 1, 0}, {B, 1, 0}, {R, 1, 0} },
+									{ {F, 1, 1}, {L, 1, 1}, {B, 1, 1}, {R, 1, 1} },
+									{ {D, 0, 0}, {D, 1, 0}, {D, 1, 1}, {D, 0, 1} } });
 
-const Move MOVE_U = Move(3, 4, { { {U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0} },
-						   { {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
-						   { {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} } });
+const Move MOVE_U = Move("U", 3, 4, {{{U, 0, 0}, {U, 0, 1}, {U, 1, 1}, {U, 1, 0}},
+									{ {F, 0, 0}, {L, 0, 0}, {B, 0, 0}, {R, 0, 0} },
+									{ {F, 0, 1}, {L, 0, 1}, {B, 0, 1}, {R, 0, 1} } });
 
-const Move MOVE_F = Move(3, 4, { { {F, 0, 0}, {F, 0, 1}, {F, 1, 1}, {F, 1, 0} },
-						   { {U, 1, 0}, {R, 0, 0}, {D, 0, 1}, {L, 1, 1} },
-						   { {U, 1, 1}, {R, 1, 0}, {D, 0, 0}, {L, 0, 1} } });
+const Move MOVE_F = Move("F", 3, 4, { { {F, 0, 0}, {F, 0, 1}, {F, 1, 1}, {F, 1, 0} },
+									{ {U, 1, 0}, {R, 0, 0}, {D, 0, 1}, {L, 1, 1} },
+									{ {U, 1, 1}, {R, 1, 0}, {D, 0, 0}, {L, 0, 1} } });
+
+// const std::vector<const Move> MOVES{ MOVE_R, MOVE_U, MOVE_F };
 
 const std::string FACES_NAMES = "UFLBRD";
 
@@ -123,20 +125,4 @@ bool isUniformlyColored(const vector2D<char>& face)
 bool Cube::isSolved() const
 {
 	return std::all_of(tiles.begin(), tiles.end(), isUniformlyColored);
-}
-
-Cube* Cube::makeCopy()
-{
-	Cube* ans = new Cube();
-	for (int face = 0; face < 6; face++)
-	{
-		for (int i = 0; i < 2; i++)
-		{
-			for (int j = 0; j < 2; j++)
-			{
-				ans->tiles[face][i][j] = tiles[face][i][j];
-			}
-		}
-	}
-	return ans;
 }

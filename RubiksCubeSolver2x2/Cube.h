@@ -42,7 +42,4 @@ public:
 	std::string stringify() const;
 
 	bool isSolved() const;
-
-	Cube* makeCopy();
-
 };
