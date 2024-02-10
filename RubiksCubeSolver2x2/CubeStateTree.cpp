@@ -12,25 +12,11 @@ CubeStateTree::CubeStateTree(const Cube& root_cube)
 
 void CubeStateTree::makeChildren(CubeStateTreeNode& node, bool reverse_moves)
 {
-	
-
-	node.children.emplace_back(node.cube, &node, "F");
-	if (!reverse_moves)
-		node.children[0].cube.moveF();
-	else
-		node.children[0].cube.moveFp();
-
-	node.children.emplace_back(node.cube, &node, "U");
-	if (!reverse_moves)
-		node.children[1].cube.moveU();
-	else
-		node.children[1].cube.moveUp();
-
-	node.children.emplace_back(node.cube, &node, "R");
-	if (!reverse_moves)
-		node.children[2].cube.moveR();
-	else
-		node.children[2].cube.moveRp();
+	for (const Move& move : Cube::moves)
+	{
+		node.children.emplace_back(node.cube, &node, move.name);
+		node.children.back().cube.move(move, reverse_moves ? -1 : 1);
+	}
 
 	for (auto& child : node.children)
 	{

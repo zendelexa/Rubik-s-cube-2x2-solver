@@ -6,6 +6,7 @@
 #include<set>
 #include <queue>
 #include <stack>
+#include <functional>
 #include "Move.h"
 #include "TypeDefs.h"
 
@@ -16,10 +17,14 @@ const int CUBE_SIZE = 2;
 class Cube
 {
 public:
+	// C-style array happens to be a lot faster than std::vector
+	char tiles[FACES_AMOUNT][CUBE_SIZE][CUBE_SIZE]; 
+	/*
 	vector3D<char> tiles = vector3D<char>
 		(FACES_AMOUNT,	   vector2D<char>
 		(CUBE_SIZE,		   std::vector<char>
 		(CUBE_SIZE)));
+	*/
 
 	Cube() = default;
 	
@@ -39,7 +44,7 @@ public:
 	void moveF2();
 	void moveFp();
 
-	std::string stringify() const;
+	static const std::vector<Move> moves;
 
-	bool isSolved() const;
+	std::string stringify() const;
 };
